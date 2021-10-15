@@ -70,7 +70,7 @@ int main(int argc, char const *argv[])
             } else {
                 // dup(tubes[node-1][0]);
                 read(tubes[node-1][0], &y, sizeof(int));
-                close(tubes[node-1][0]);
+                close(tubes[node-1][0]); // les closes sont à déplacer pour faire tourner le programme tant qu'il le faut et pas une seule fois
             }
             if (node == n-1)
             {
