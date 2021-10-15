@@ -22,7 +22,7 @@ int main(int argc, char const *argv[])
 {
     if (argc != 2)
     {
-        fprintf(stderr,"usage : ./projet_O int\n");
+        fprintf(stderr,"usage : ./projet1 int\n");
         exit(-1);
     }
     int node = 0;
