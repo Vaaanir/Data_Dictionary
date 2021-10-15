@@ -17,6 +17,6 @@ int main(int argc, char const *argv[])
     fprintf(stdout,"Le resultat est : %s\n",lookup(ptete,7));
     fprintf(stdout,"On cherche une valeur non existante : \n");
     fprintf(stdout,"Le resultat est : %s\n",lookup(ptete,12));
-    //free(ptete);
+    free(ptete);
     return 0;
 }
