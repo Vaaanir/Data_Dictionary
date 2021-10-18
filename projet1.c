@@ -5,10 +5,11 @@
 #include <sys/wait.h>
 
 int **createTable(int nbLin){
+    int nbCol = 2;
 	int **table = (int **)malloc(sizeof(int*)*nbLin);
-	int *table2 = (int *)malloc(sizeof(int)*2*nbLin);
+	int *table2 = (int *)malloc(sizeof(int)*nbCol*nbLin);
 	for(int i = 0 ; i < nbLin ; i++){
-		table[i] = &table2[i*2];
+		table[i] = &table2[i*nbCol];
 	}
 	return table;
 }

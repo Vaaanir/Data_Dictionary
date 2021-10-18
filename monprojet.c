@@ -1,6 +1,25 @@
 #include <stdio.h>
-// #include <stdlib.h>
+#include <stdlib.h>
 #include "table.h"
+
+int **createTable(int nbLin){
+    int nbCol = 2;
+	int **table = (int **)malloc(sizeof(int*)*nbLin);
+	int *table2 = (int *)malloc(sizeof(int)*nbCol*nbLin);
+	for(int i = 0 ; i < nbLin ; i++){
+		table[i] = &table2[i*nbCol];
+	}
+	return table;
+}
+ 
+void freeTable(int **table){
+	free(table[0]);
+	free(table);
+}
+
+void init_pipes() {
+
+}
 
 void controller(int taille) {
     int ent;
@@ -18,7 +37,7 @@ void controller(int taille) {
                 break;
             
             case 0:
-                //node()
+                //node(cmd,)
                 break;
 
             default:
@@ -37,7 +56,7 @@ void controller(int taille) {
                             fscanf(stdin,"%d",&cle);
                             fprintf(stdout,"Saisir la valeur (chaine de caracteres, max 128 chars) : ");
                             fscanf(stdin,"%s",&valeur);
-                            //faire exec set à node
+                            //faire exec set à node 0 qui transmettra au bon node
                             break;
 
                         case 2:
