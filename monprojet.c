@@ -1,6 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/wait.h>
 #include "table.h"
+#define EXIT 0
+#define SET 1
+#define LOOKUP 2
+#define DUMP 3
 
 int **createTable(int nbLin){
     int nbCol = 2;
@@ -17,8 +24,14 @@ void freeTable(int **table){
 	free(table);
 }
 
-void init_pipes() {
-
+void init_pipes(int taille) {
+    int tubeM[2];   // main pipe
+    int **tubes = createTable(taille);   // other pipes
+    pipe(tubeM);
+    for (int i = 0; i < taille; i++)
+    {
+        pipe(tubes[i]);
+    }
 }
 
 void controller(int taille) {
@@ -27,9 +40,10 @@ void controller(int taille) {
     int n;
     int node = 0;
     char valeur[128];
+    init_pipes(taille);
     while (node < taille)
     {
-        switch (fork(n))
+        switch (fork())
             {
             case -1:
                 perror("fork");
@@ -38,6 +52,7 @@ void controller(int taille) {
             
             case 0:
                 //node(cmd,)
+                printf("pid -> %d\n",getpid());
                 break;
 
             default:
@@ -47,25 +62,28 @@ void controller(int taille) {
                     fscanf(stdin,"%d",&ent);
                     switch (ent)
                         {
-                        case 0:
+                        case EXIT:
                             //exit (envoi du signal d'arret à chaque node)
                             break;
 
-                        case 1:
+                        case SET:
                             fprintf(stdout,"Saisir la cle (decimal number) : ");
                             fscanf(stdin,"%d",&cle);
                             fprintf(stdout,"Saisir la valeur (chaine de caracteres, max 128 chars) : ");
                             fscanf(stdin,"%s",&valeur);
                             //faire exec set à node 0 qui transmettra au bon node
+                            //ecrit dans tube(n-1) 
+                            //write();
                             break;
 
-                        case 2:
+                        case LOOKUP:
                             fprintf(stdout,"Saisir la cle (decimal number) : ");
                             fscanf(stdin,"%d",&cle);
                             //faire exec lookup à node
+                            //ecrit dans tube(n-1) la clé
                             break;
 
-                        case 3:
+                        case DUMP:
                             //dump (debug)
                             break;
                         
@@ -93,6 +111,6 @@ int main(int argc, char const *argv[])
     }
     int n = atoi(argv[1]);
     controller(n);
-    
+    //essayer do while merci de rentrer... et appeler controller dedans
     return 0;
 }
