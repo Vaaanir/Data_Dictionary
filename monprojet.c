@@ -24,9 +24,8 @@ void freeTable(int **table){
 	free(table);
 }
 
-void init_pipes(int taille) {
-    int tubeM[2];   // main pipe
-    int **tubes = createTable(taille);   // other pipes
+void init_pipes(int taille, int tubeM[2], int** tubes) {
+    tubes = createTable(taille);   // other pipes
     pipe(tubeM);
     for (int i = 0; i < taille; i++)
     {
@@ -37,10 +36,18 @@ void init_pipes(int taille) {
 void controller(int taille) {
     int ent;
     int cle;
-    int n;
+    PTable_entry ptete = (PTable_entry) malloc(sizeof(Table_entry));
+    ptete = NULL; 
     int node = 0;
     char valeur[128];
-    init_pipes(taille);
+    int tubeM[2];   // main pipe
+    int **tubes = createTable(taille);   // other pipes
+    pipe(tubeM);
+    for (int i = 0; i < taille; i++)
+    {
+        pipe(tubes[i]);
+    }
+    // init_pipes(taille, tubeM, tubes);
     while (node < taille)
     {
         switch (fork())
@@ -51,8 +58,9 @@ void controller(int taille) {
                 break;
             
             case 0:
-                //node(cmd,)
+                //node(tubes, taille, node, ptete)
                 printf("pid -> %d\n",getpid());
+                exit(0);
                 break;
 
             default:
@@ -70,10 +78,13 @@ void controller(int taille) {
                             fprintf(stdout,"Saisir la cle (decimal number) : ");
                             fscanf(stdin,"%d",&cle);
                             fprintf(stdout,"Saisir la valeur (chaine de caracteres, max 128 chars) : ");
-                            fscanf(stdin,"%s",&valeur);
+                            fscanf(stdin,"%s",valeur);
                             //faire exec set à node 0 qui transmettra au bon node
                             //ecrit dans tube(n-1) 
-                            //write();
+                            int x = 1;
+                            write(tubes[taille-1][1], &x, sizeof(int));
+                            write(tubes[taille-1][1], &cle, sizeof(int));
+                            write(tubes[taille-1][1], &valeur, sizeof(char)*128);
                             break;
 
                         case LOOKUP:
@@ -91,6 +102,13 @@ void controller(int taille) {
                             break;
                         }
                 } while (ent!=0);
+                // int y;
+                // read(tubes[taille-1][0], &y, sizeof(int));
+                // int key;
+                // read(tubes[taille-1][0], &key, sizeof(int));
+                // char string[128];
+                // read(tubes[taille-1][0], string, sizeof(char)*128);
+                // printf("Cmd -> %d Clé -> %d Valeur -> %s\n", y, key, string);
                 break;
             }
             node++;
@@ -100,7 +118,31 @@ void controller(int taille) {
     
 }
 
-//void node()
+void node(int** tubes, int taille, int ind, PTable_entry ptete) {
+    //faire la fermeture de tout ce qui est inutile
+    int position = ind;
+    int y;
+    if (ind == 0)
+    {
+        position = taille;
+    }
+    read(tubes[position-1][0], &y, sizeof(int));
+    if (y==1)   // La commande est SET
+    {
+        int key;
+        read(tubes[position-1][0], &key, sizeof(int));  //on recup la clé
+        char valeur[128];
+        read(tubes[position-1][0], valeur, sizeof(char)*128);   //on recup la valeur
+        if (key%taille==ind) {  // on est dans noeud qui gère le set
+            store(&ptete,key,valeur);
+            // il faut ensuite signaler au controller qu'on a terminé
+        } else {
+            // on doit write les 3 infos dans le prochain tube
+        }
+    }
+    
+    
+}
 
 int main(int argc, char const *argv[])
 {
