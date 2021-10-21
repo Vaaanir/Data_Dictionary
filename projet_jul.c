@@ -84,13 +84,15 @@ void node(int** tubes,int * tubeM ,int taille, int ind) {
             read(tubes[position-1][0], &key, sizeof(int));  //on recup la clé
             if (key%taille==ind){
                 char valeur[128];
-                //valeur=lookup(ptete,key);
-                // int act=1;
-                // write(tubeM[1],&act,sizeof(int));
-                // fprintf(stdout,"\n %s",lookup(ptete,key));
-                fprintf(stdout,"\n %d",key);
-            printf("avant print");
-                write(tubeM[1], lookup(ptete,key), sizeof(char)*128);
+                int act=0;
+                if (lookup(ptete,key)!=NULL){
+                    act=1;
+                    write(tubeM[1], &act, sizeof(int));
+                    write(tubeM[1], lookup(ptete,key), sizeof(char)*128);
+                }
+                else {
+                    write(tubeM[1], &act, sizeof(int));
+                }
             }
             else{ //il passe à son voisin la recherche
                 write(tubes[ind][1], &y, sizeof(int));
@@ -176,14 +178,14 @@ void controller(int taille) {
             char valeur[128];
             write(tubes[taille-1][1], &x, sizeof(int));
             write(tubes[taille-1][1], &cle, sizeof(int));
-            // read(tubeM[0],&x,sizeof(int));
-            // if (x==1){
-            read(tubeM[0],valeur,sizeof(char)*128);
-            fprintf(stdout,"Valeur trouvée = %s",valeur);
-            // }
-            // else{
-            // fprintf(stdout,"Valeur non trouvée");
-            // }
+            read(tubeM[0],&x,sizeof(int));
+            if (x==1){
+                read(tubeM[0],valeur,sizeof(char)*128);
+                fprintf(stdout,"Valeur trouvée = %s \n",valeur);
+            }
+            else{
+                fprintf(stdout,"Valeur non trouvée \n");
+            }
             break;
 
         case DUMP:
