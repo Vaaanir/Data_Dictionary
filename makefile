@@ -5,7 +5,7 @@ OBJ0 = projet_0.o
 EXEC0 = projet_0
 OBJ1 = projet1.o
 EXEC1 = projet1
-OBJ2 = monprojet.o
+OBJ2 = monprojet.o table.o
 EXEC2 = monprojet
 all: $(EXEC) $(EXEC0) $(EXEC1) $(EXEC2)
 $(EXEC): $(OBJS)

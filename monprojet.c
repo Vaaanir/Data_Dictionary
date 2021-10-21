@@ -9,7 +9,7 @@
 #define LOOKUP 2
 #define DUMP 3
 
-int **createTable(int nbLin){
+int **createTable(int nbLin){ //crée le tableau permettant de faire passer les commandes dans les pipes
     int nbCol = 2;
 	int **table = (int **)malloc(sizeof(int*)*nbLin);
 	int *table2 = (int *)malloc(sizeof(int)*nbCol*nbLin);
@@ -19,12 +19,12 @@ int **createTable(int nbLin){
 	return table;
 }
  
-void freeTable(int **table){
+void freeTable(int **table){//vide la table ?
 	free(table[0]);
 	free(table);
 }
 
-void init_pipes(int taille, int tubeM[2], int** tubes) {
+void init_pipes(int taille, int tubeM[2], int** tubes) {//ne marche pas
     tubes = createTable(taille);   // other pipes
     pipe(tubeM);
     for (int i = 0; i < taille; i++)
@@ -33,22 +33,53 @@ void init_pipes(int taille, int tubeM[2], int** tubes) {
     }
 }
 
+void node(int** tubes, int taille, int ind, PTable_entry ptete) {
+    //faire la fermeture de tout ce qui est inutile
+    int position = ind;
+    int y;
+    if (ind == 0)
+    {
+        position = taille;
+    }
+    read(tubes[position-1][0], &y, sizeof(int));
+    if (y==1)   // La commande est SET
+    {
+        int key;
+        read(tubes[position-1][0], &key, sizeof(int));  //on recup la clé
+        char valeur[128];
+        read(tubes[position-1][0], valeur, sizeof(char)*128);   //on recup la valeur
+        if (key%taille==ind) {  // on est dans noeud qui gère le set
+            store(&ptete,key,valeur);
+            fprintf(stdout,"clé : %d \t valeur : %s",key,valeur); // test pour voir si on as bien la valeur
+            // il faut ensuite signaler au controller qu'on a terminé
+            //
+            //write(tubeM[0][0])
+        } else {
+            // on doit write les 3 infos dans le prochain tube
+        }
+    }
+    
+    
+}
+
 void controller(int taille) {
     int ent;
     int cle;
     PTable_entry ptete = (PTable_entry) malloc(sizeof(Table_entry));
     ptete = NULL; 
-    int node = 0;
+    int nodec = 0;
     char valeur[128];
+
     int tubeM[2];   // main pipe
-    int **tubes = createTable(taille);   // other pipes
+    int **tubes = createTable(taille);   // other pipes 
     pipe(tubeM);
     for (int i = 0; i < taille; i++)
     {
         pipe(tubes[i]);
     }
     // init_pipes(taille, tubeM, tubes);
-    while (node < taille)
+    
+    while (nodec < taille)
     {
         switch (fork())
             {
@@ -58,12 +89,12 @@ void controller(int taille) {
                 break;
             
             case 0:
-                //node(tubes, taille, node, ptete)
+                node(tubes, taille, nodec, ptete);
                 printf("pid -> %d\n",getpid());
                 exit(0);
                 break;
 
-            default:
+            default://faire if pour vérifier si c'est un processus fils
                 do
                 {
                     fprintf(stdout,"Merci de saisir la commande (0 = exit, 1 = set, 2 = lookup, 3 = dump) : ");
@@ -72,6 +103,8 @@ void controller(int taille) {
                         {
                         case EXIT:
                             //exit (envoi du signal d'arret à chaque node)
+                            printf("j'exécute avant de sortir");
+                            exit(0);
                             break;
 
                         case SET:
@@ -111,38 +144,14 @@ void controller(int taille) {
                 // printf("Cmd -> %d Clé -> %d Valeur -> %s\n", y, key, string);
                 break;
             }
-            node++;
+            nodec++;
     }
     
     
     
 }
 
-void node(int** tubes, int taille, int ind, PTable_entry ptete) {
-    //faire la fermeture de tout ce qui est inutile
-    int position = ind;
-    int y;
-    if (ind == 0)
-    {
-        position = taille;
-    }
-    read(tubes[position-1][0], &y, sizeof(int));
-    if (y==1)   // La commande est SET
-    {
-        int key;
-        read(tubes[position-1][0], &key, sizeof(int));  //on recup la clé
-        char valeur[128];
-        read(tubes[position-1][0], valeur, sizeof(char)*128);   //on recup la valeur
-        if (key%taille==ind) {  // on est dans noeud qui gère le set
-            store(&ptete,key,valeur);
-            // il faut ensuite signaler au controller qu'on a terminé
-        } else {
-            // on doit write les 3 infos dans le prochain tube
-        }
-    }
-    
-    
-}
+
 
 int main(int argc, char const *argv[])
 {
