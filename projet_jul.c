@@ -38,12 +38,12 @@ void node(int** tubes,int * tubeM ,int taille, int ind) {
     close(tubeM[0]);
     for (int i = 0; i < taille; i++)
     {
-        if(i == ind) {
+        if(i == ind) { //on close la lecture de son propre tube
             close(tubes[i][0]);
-        } else if (i == ind-1 || (ind==0 && i == taille-1)) {
+        } else if (i == ind-1 || (ind==0 && i == taille-1)) { //on ferme l'écriture du tube d'avant
             close(tubes[i][1]);
         } else {
-            close(tubes[i][0]);
+            close(tubes[i][0]);//on ferme les tubes dont on n'as pas besoin
             close(tubes[i][1]);
         }
     }
@@ -87,9 +87,10 @@ void node(int** tubes,int * tubeM ,int taille, int ind) {
                 //valeur=lookup(ptete,key);
                 // int act=1;
                 // write(tubeM[1],&act,sizeof(int));
-                fprintf(stdout,"\n %s",lookup(ptete,key));
+                // fprintf(stdout,"\n %s",lookup(ptete,key));
+                fprintf(stdout,"\n %d",key);
             printf("avant print");
-                // write(tubeM[1], lookup(ptete,key), sizeof(char)*128);
+                write(tubeM[1], lookup(ptete,key), sizeof(char)*128);
             }
             else{ //il passe à son voisin la recherche
                 write(tubes[ind][1], &y, sizeof(int));
@@ -137,7 +138,6 @@ void controller(int taille) {
                 break;
 
             default://faire if pour vérifier si c'est un processus fils
-                
                 break;
             }
             nodec++;
