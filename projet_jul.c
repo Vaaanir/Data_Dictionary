@@ -103,7 +103,7 @@ void node(int** tubes,int * tubeM ,int taille, int ind) {
     }
 
     //fermer tous les pipes pour éviter que les processus fils ne deviennent zombie
-    
+    exit(0);
     
 }
 
@@ -158,7 +158,7 @@ void controller(int taille) {
             break;
         case SET:
             fprintf(stdout,"Saisir la cle (decimal number) : ");
-            fscanf(stdin,"%d",&cle);
+            fscanf(stdin,"%d",&cle);    // REGARDER SI BIEN INT
             fprintf(stdout,"Saisir la valeur (chaine de caracteres, max 128 chars) : ");
             fscanf(stdin,"%s",valeur);
             //faire exec set à node 0 qui transmettra au bon node
@@ -171,7 +171,8 @@ void controller(int taille) {
 
         case LOOKUP:
             fprintf(stdout,"Saisir la cle (decimal number) : ");
-            fscanf(stdin,"%d",&cle);
+            fscanf(stdin,"%d",&cle);    //REGARDER SI BIEN INT
+            //
             //faire exec lookup à node
             //ecrit dans tube(n-1) la clé
             x =2;
