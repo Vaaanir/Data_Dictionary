@@ -66,7 +66,12 @@ void node(int** tubes,int * tubeM ,int taille, int ind) {
             read(tubes[position-1][0], &key, sizeof(int));  //on recup la clé
             char valeur[128];
             read(tubes[position-1][0], valeur, sizeof(char)*128);   //on recup la valeur
-            if (key%taille==ind) {  // on est dans noeud qui gère le set
+            fprintf(stdout,"clé -> %d taille -> %d ind -> %d",key,taille,ind);
+            int mod = key%taille;
+            if (mod < 0) {
+                mod += taille;
+            }
+            if (mod==ind) {  // on est dans noeud qui gère le set
                 store(&ptete,key,valeur);
                 fprintf(stdout,"clé : %d \t valeur : %s \n",key,lookup(ptete,key)); // test pour voir si on as bien la valeur
                 // il faut ensuite signaler au controller qu'on a terminé
@@ -82,7 +87,11 @@ void node(int** tubes,int * tubeM ,int taille, int ind) {
         else if (y==2){ //commande lookup
             int key;
             read(tubes[position-1][0], &key, sizeof(int));  //on recup la clé
-            if (key%taille==ind){
+            int mod = key%taille;
+            if (mod < 0) {
+                mod += taille;
+            }
+            if (mod==ind) {
                 char valeur[128];
                 int act=0;
                 if (lookup(ptete,key)!=NULL){
@@ -101,8 +110,12 @@ void node(int** tubes,int * tubeM ,int taille, int ind) {
             }
         }
     }
-
     //fermer tous les pipes pour éviter que les processus fils ne deviennent zombie
+    close(tubes[position-1][0]);  //on ferme le tube qu'on a fini de read
+    close(tubes[position][1]);  //on ferme le tube qui a (maybe) était write
+    int sigkill = 1;
+    write(tubeM[1],&sigkill,sizeof(int));
+    close(tubeM[1]);    //on ferme l'accès au controller
     exit(0);
     
 }
@@ -114,6 +127,7 @@ void controller(int taille) {
     ptete = NULL; 
     int nodec = 0;
     char valeur[128];
+    char key[128];
 
     int tubeM[2];   // main pipe
     int **tubes = createTable(taille);   // other pipes 
@@ -123,7 +137,11 @@ void controller(int taille) {
         pipe(tubes[i]);
     }
     // init_pipes(taille, tubeM, tubes);
-    
+    //close tous les tubes[][0] + tubeM[1]
+    // for (int comp;comp<taille;comp++){
+    //     close(tubes[comp][0]);
+    // }
+    // close(tubeM[1]);
     while (nodec < taille)
     {
         switch (fork())
@@ -146,19 +164,50 @@ void controller(int taille) {
     }
     do {
         fprintf(stdout,"Merci de saisir la commande (0 = exit, 1 = set, 2 = lookup, 3 = dump) : ");
+        //char nb[1];
+        //fscanf(stdin,"%s",nb);
         fscanf(stdin,"%d",&ent);
+        //int ent = atoi(nb);
         int x;
         switch (ent) {
             case EXIT:
             //exit (envoi du signal d'arret à chaque node)
             printf("j'exécute avant de sortir\n");
             x=-1;
-            write(tubes[taille-1][1],&x,sizeof(int));
+            for (int i = 0; i < taille; i++)
+            {
+                if (i==0) {
+                    write(tubes[taille-1][1],&x,sizeof(int));                
+                } else {
+                    write(tubes[i-1][1],&x,sizeof(int));
+                }
+            }
+            //exit(0);
+            int comp = 0;
+            // while (comp<taille){
+            //     if (read(tubeM[0],&x,sizeof(int))!=0) {
+            //         comp++;
+            //     }
+            // }
+            while (comp < taille) {
+                read(tubeM[0],&x,sizeof(int));
+                printf("sigkill : %d",x);
+                comp++;
+            }
+
+            //close tous les tubes
+
+
+            for (int comp;comp<taille;comp++){
+                close(tubes[comp][1]);
+            }
+            close(tubeM[0]);
             exit(0);
             break;
         case SET:
-            fprintf(stdout,"Saisir la cle (decimal number) : ");
-            fscanf(stdin,"%d",&cle);    // REGARDER SI BIEN INT
+            fprintf(stdout,"Saisir la cle (nombre décimal, 0 par défault) : ");
+            fscanf(stdin,"%s",key);    //REGARDER SI BIEN INT
+            cle = atoi(key);
             fprintf(stdout,"Saisir la valeur (chaine de caracteres, max 128 chars) : ");
             fscanf(stdin,"%s",valeur);
             //faire exec set à node 0 qui transmettra au bon node
@@ -170,13 +219,13 @@ void controller(int taille) {
             break;
 
         case LOOKUP:
-            fprintf(stdout,"Saisir la cle (decimal number) : ");
-            fscanf(stdin,"%d",&cle);    //REGARDER SI BIEN INT
-            //
+            fprintf(stdout,"Saisir la cle (nombre décimal, 0 par défault) : ");
+            fscanf(stdin,"%s",key);    //REGARDER SI BIEN INT
+            cle = atoi(key); //le atoi met 0 s'il trouve une chaine de caractère, donc 0 est une valeur par défaut
             //faire exec lookup à node
             //ecrit dans tube(n-1) la clé
             x =2;
-            char valeur[128];
+            // char valeur[128];
             write(tubes[taille-1][1], &x, sizeof(int));
             write(tubes[taille-1][1], &cle, sizeof(int));
             read(tubeM[0],&x,sizeof(int));
@@ -194,8 +243,9 @@ void controller(int taille) {
             break;
                         
         default:
+            printf("ahah je me suis perdu\n");
             break;
-                        }
+        }
     } while (ent!=0);
 // int y;
 // read(tubes[taille-1][0], &y, sizeof(int));
@@ -218,7 +268,12 @@ int main(int argc, char const *argv[])
         exit(-1);
     }
     int n = atoi(argv[1]);
-    controller(n);
-    //essayer do while merci de rentrer... et appeler controller dedans
+    if (n>=2)
+    {
+        controller(n);
+    } else {
+        fprintf(stderr,"Usage: ./monprojet int (>1)\n");
+        return -1;
+    }
     return 0;
 }

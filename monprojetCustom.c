@@ -79,7 +79,7 @@ void node(int** tubes, int* tubeM, int taille, int ind) {
     }
     //si commande est exit
     /*close(tubes[position-1][0]);  //on ferme le tube qu'on a fini de read
-    close(tubes[position][0]);  //on ferme le tube qui a (maybe) était write
+    close(tubes[position][1]);  //on ferme le tube qui a (maybe) était write
     close(tubeM[1]);    //on ferme l'accès au controller
     */
     
