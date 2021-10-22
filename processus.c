@@ -171,6 +171,7 @@ void controller(int taille) {
                 close(tubes[i][1]);
             }
             close(tubeM[0]);
+            freeTable(tubes);
             exit(0);
             break;
         case SET:
