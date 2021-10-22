@@ -137,11 +137,6 @@ void controller(int taille) {
         pipe(tubes[i]);
     }
     // init_pipes(taille, tubeM, tubes);
-    //close tous les tubes[][0] + tubeM[1]
-    // for (int comp;comp<taille;comp++){
-    //     close(tubes[comp][0]);
-    // }
-    // close(tubeM[1]);
     while (nodec < taille)
     {
         switch (fork())
@@ -162,6 +157,11 @@ void controller(int taille) {
             }
             nodec++;
     }
+    //close tous les tubes[][0] + tubeM[1]
+    for (int comp;comp<taille;comp++){
+        close(tubes[comp][0]);
+    }
+    close(tubeM[1]);
     do {
         fprintf(stdout,"Merci de saisir la commande (0 = exit, 1 = set, 2 = lookup, 3 = dump) : ");
         //char nb[1];
