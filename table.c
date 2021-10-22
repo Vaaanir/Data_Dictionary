@@ -4,12 +4,26 @@
 #include "table.h"  
 // Stocke dans table la valeur v sous la cle k 
 void store(PTable_entry *table, int k, char v[]) { 
-    PTable_entry te = (PTable_entry) malloc(sizeof(Table_entry)); 
-    te->key = k; 
-    te->val = (char*) malloc(strlen(v) + 1); 
-    strcpy(te->val, v); 
-    te->next = *table; 
-    *table = te; 
+    
+    if (lookup(*table, k)==NULL)    //Si la clé n'est pas déjà dans la table, on l'ajoute
+    {
+        PTable_entry te = (PTable_entry) malloc(sizeof(Table_entry)); 
+        te->key = k; 
+        te->val = (char*) malloc(strlen(v) + 1); 
+        strcpy(te->val, v); 
+        te->next = *table; 
+        *table = te; 
+    }
+    else    //Sinon on remplace simplement sa valeur associée
+    {
+        PTable_entry pe = *table;
+        while (pe->key != k)
+        {
+            pe->next;
+        }
+        pe->val = (char*) malloc(strlen(v) + 1); 
+        strcpy(pe->val, v); 
+    }
 }  
 // Retourne la valeur se trouvant dans table sous la cle k, ou NULL si la 
 // cle n'existe pas 

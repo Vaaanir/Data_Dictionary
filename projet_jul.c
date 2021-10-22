@@ -63,13 +63,13 @@ void node(int** tubes,int * tubeM ,int taille, int ind) {
         act = 0;
         read(tubes[position-1][0], &y, sizeof(int)); //on lit la valeur qu'on veut
         //On peut mettre un switch ici 
-        if (y==1)   // La commande est SET
+        if (y==SET)   // La commande est SET
         {
             int key;    
             read(tubes[position-1][0], &key, sizeof(int));  //on recup la clé
             char valeur[128];
             read(tubes[position-1][0], valeur, sizeof(char)*128);   //on recup la valeur
-            fprintf(stdout,"clé -> %d taille -> %d ind -> %d",key,taille,ind);
+            fprintf(stdout,"clé -> %d taille -> %d ind -> %d\n",key,taille,ind);
             int mod = key%taille;
             if (mod < 0) {
                 mod += taille;
@@ -86,7 +86,7 @@ void node(int** tubes,int * tubeM ,int taille, int ind) {
                 write(tubes[ind][1], &valeur, sizeof(char)*128);
             }
         }
-        else if (y==2){ //commande lookup
+        else if (y==LOOKUP){ //commande lookup
             int key;
             read(tubes[position-1][0], &key, sizeof(int));  //on recup la clé
             int mod = key%taille;
@@ -110,18 +110,19 @@ void node(int** tubes,int * tubeM ,int taille, int ind) {
 
             }
         }
-        else if(y==3){
+        else if(y==DUMP){
             int rec=3; //variable bateau permettant de donner le go au fils suivant (et donc permettre de ne pas mélanger les affichages) 
             act=1;
             if(ind!=0){
-                read(tubes[position][0],&rec,sizeof(int));
+                read(tubes[ind-1][0],&rec,sizeof(int));
             }
+            printf("process %d :\n",getpid());
             display(ptete);
             if (ind==taille-1){
                 write(tubeM[1],&act,sizeof(int)); //permet au controleur de reprendre la mains
             }
             else{
-                write(tubes[ind][0],&rec,sizeof(int)); //écriture du go
+                write(tubes[ind][1],&rec,sizeof(int)); //écriture du go
             }
         }
     }
@@ -194,12 +195,10 @@ void controller(int taille) {
                     write(tubes[i-1][1],&x,sizeof(int));
                 }
             }
-            int comp = 0;
+
             while (wait(NULL)!=-1);
 
             //close tous les tubes
-
-
             for (int i = 0;i<taille;i++){
                 close(tubes[i][1]);
             }
@@ -218,7 +217,6 @@ void controller(int taille) {
             scanf("%c",&temp);
             //fscanf(stdin,"%s",valeur);
             fgets(valeur, 128, stdin);
-            //Stokage de la donnée dans la bdd
             //faire exec set à node 0 qui transmettra au bon node
             //ecrit dans tube(n-1) 
             x = 1;
