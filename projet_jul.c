@@ -264,15 +264,6 @@ void controller(int taille) {
             break;
         }
     } while (ent!=0);
-// int y;
-// read(tubes[taille-1][0], &y, sizeof(int));
-// int key;
-// read(tubes[taille-1][0], &key, sizeof(int));
-// char string[128];
-// read(tubes[taille-1][0], string, sizeof(char)*128);
-// printf("Cmd -> %d Clé -> %d Valeur -> %s\n", y, key, string);
-    
-    
 }
 
 

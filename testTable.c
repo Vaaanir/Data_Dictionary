@@ -10,8 +10,9 @@ int main(int argc, char const *argv[])
     store(&ptete,7,"je trouve");
     store(&ptete,8,"ça");
     store(&ptete,10,"ahah");
-    store(&ptete,10,"wait what");
+    
     store(&ptete,6,"mais");
+    store(&ptete,10,"wait what");
     fprintf(stdout,"On affiche la liste entière : \n");
     display(ptete);
     fprintf(stdout,"On cherche une valeur existante : \n");

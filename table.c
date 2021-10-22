@@ -2,6 +2,8 @@
 #include <stdlib.h> 
 #include <string.h> 
 #include "table.h"  
+//TURC Julien
+//ZAETTA Lucas
 // Stocke dans table la valeur v sous la cle k 
 void store(PTable_entry *table, int k, char v[]) { 
     
@@ -19,7 +21,7 @@ void store(PTable_entry *table, int k, char v[]) {
         PTable_entry pe = *table;
         while (pe->key != k)
         {
-            pe->next;
+            pe = pe->next;
         }
         pe->val = (char*) malloc(strlen(v) + 1); 
         strcpy(pe->val, v); 
